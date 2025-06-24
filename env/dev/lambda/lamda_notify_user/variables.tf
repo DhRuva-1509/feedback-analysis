@@ -22,3 +22,8 @@ variable "s3_bucket_arn" {
   description = "The ARN of the S3 bucket for processed feedback files"
   type = string
 }
+
+variable "s3_bucket_name" {
+  description = "The ARN of the S3 bucket for processed feedback files"
+  type = string
+}
