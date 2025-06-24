@@ -53,3 +53,24 @@ resource "aws_lambda_function" "notify_user" {
     }
   }
 }
+
+resource "aws_iam_role_policy" "notify_user_permissions" {
+  name = "${var.project_name}-${var.environment}-notify-user-policy"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = ["sns:Publish"],
+        Resource = var.sns_topic_arn
+      },
+      {
+        Effect = "Allow",
+        Action = ["s3:GetObject"],
+        Resource = "${var.s3_bucket_arn}/processed/*"
+      }
+    ]
+  })
+}

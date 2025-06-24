@@ -4,4 +4,5 @@ module "lambda_notify_user" {
   environment =  var.environment
   sns_topic_arn = var.sns_topic_arn
   lambda_zip_path = var.lambda_zip_path
+  s3_bucket_arn = var.s3_bucket_arn
 }
