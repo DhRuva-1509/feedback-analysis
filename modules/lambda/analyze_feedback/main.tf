@@ -54,7 +54,8 @@ resource "aws_lambda_function" "analyze_feedback" {
 
   environment {
     variables = {
-      BUCKET_NAME = var.s3_bucket_name
+      BUCKET_NAME     = var.s3_bucket_name
+      SNS_TOPIC_ARN   = var.sns_topic_arn
     }
   }
 }
