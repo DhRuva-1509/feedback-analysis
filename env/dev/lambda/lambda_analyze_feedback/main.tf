@@ -1,3 +1,10 @@
+module "s3_uploads" {
+  source       = "../../../../modules/s3"
+  project_name = var.project_name
+  environment  = var.environment
+  bucket_name  = var.s3_bucket_name
+}
+
 module "lambda_analyze_feedback" {
   source           = "../../../../modules/lambda/analyze_feedback"
   project_name     = var.project_name
@@ -53,4 +60,24 @@ resource "aws_iam_policy" "lambda_comprehend_policy" {
 resource "aws_iam_role_policy_attachment" "attach_comprehend_policy" {
   role       = module.lambda_analyze_feedback.lambda_role_name
   policy_arn = aws_iam_policy.lambda_comprehend_policy.arn
+}
+
+resource "aws_lambda_permission" "allow_s3_invoke_analyze_feedback" {
+  statement_id  = "AllowS3InvokeAnalyzeFeedback"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda_analyze_feedback.lambda_function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = module.s3_uploads.bucket_arn
+}
+
+resource "aws_s3_bucket_notification" "analyze_feedback_trigger" {
+  bucket = module.s3_uploads.bucket_name
+
+  lambda_function {
+    lambda_function_arn = module.lambda_analyze_feedback.lambda_function_arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "incoming/"
+  }
+
+  depends_on = [aws_lambda_permission.allow_s3_invoke_analyze_feedback]
 }
