@@ -56,6 +56,7 @@ resource "aws_lambda_function" "analyze_feedback" {
     variables = {
       BUCKET_NAME     = var.s3_bucket_name
       SNS_TOPIC_ARN   = var.sns_topic_arn
+      SQS_QUEUE_URL  = var.sqs_queue_url
     }
   }
 }

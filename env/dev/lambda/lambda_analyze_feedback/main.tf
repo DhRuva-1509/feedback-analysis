@@ -5,6 +5,12 @@ module "s3_uploads" {
   bucket_name  = var.s3_bucket_name
 }
 
+module "sqs" {
+  source       = "../../../../modules/sqs"
+  project_name = var.project_name
+  environment  = var.environment
+}
+
 module "lambda_analyze_feedback" {
   source           = "../../../../modules/lambda/analyze_feedback"
   project_name     = var.project_name
@@ -14,11 +20,12 @@ module "lambda_analyze_feedback" {
   s3_bucket_arn    = var.s3_bucket_arn
   sns_topic_arn    = var.sns_topic_arn
   aws_region       = var.aws_region
+  sqs_queue_url    = module.sqs.queue_url
 }
 
 resource "aws_iam_policy" "lambda_comprehend_policy" {
   name        = "${var.project_name}-${var.environment}-analyze-comprehend-policy"
-  description = "Allows Lambda to use Comprehend, S3 Read, CloudWatch, and SNS"
+  description = "Allows Lambda to use Comprehend, S3 Read, CloudWatch, SNS, and SQS"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -52,6 +59,13 @@ resource "aws_iam_policy" "lambda_comprehend_policy" {
           "sns:Publish"
         ],
         Resource = var.sns_topic_arn
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "sqs:SendMessage"
+        ],
+        Resource = module.sqs.queue_arn
       }
     ]
   })
